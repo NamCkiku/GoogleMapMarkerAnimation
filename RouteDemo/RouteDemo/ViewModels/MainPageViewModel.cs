@@ -177,27 +177,32 @@ namespace RouteDemo.ViewModels
 
         private void SuperInteligent()
         {
-            PlayCurrent++;
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                PlayCurrent++;
 
-            CurrentRoute = ListRoute[PlayCurrent];
-            RotateMarker(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
-             {
-                 MarkerAnimation(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
-                 {
-                     if (PlayCurrent + 1 > PlayMax || ctsRouting.IsCancellationRequested)
-                     {
-                         IsPlaying = false;
-                         return;
-                     }
+                CurrentRoute = ListRoute[PlayCurrent];
+                RotateMarker(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
+                {
+                    MarkerAnimation(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
+                    {
+                        if (PlayCurrent + 1 > PlayMax || ctsRouting.IsCancellationRequested)
+                        {
+                            IsPlaying = false;
+                            return;
+                        }
 
-                     SuperInteligent();
-                 });
-             });
+                        SuperInteligent();
+                    });
+                });
+
+            });
+
         }
 
         public void RotateMarker(double latitude,
             double longitude,
-            Action callback, int duration = 50)
+            Action callback, int duration = 100)
         {
             //gán lại vòng quay
             var mRotateIndex = 0;
@@ -209,11 +214,9 @@ namespace RouteDemo.ViewModels
                 callback();
                 return;
             }
-
-            //tính lại độ lệch góc
-            var deltaAngle = GeoHelper.GetRotaion(PinCar.Rotation, angle);
-
             var startRotaion = PinCar.Rotation;
+            //tính lại độ lệch góc
+            var deltaAngle = GeoHelper.GetRotaion(startRotaion, angle);
 
             Device.StartTimer(TimeSpan.FromMilliseconds(50), () =>
             {
@@ -262,9 +265,9 @@ namespace RouteDemo.ViewModels
                     PinCar.Position = new Position(postionnew.Latitude, postionnew.Longitude);
                     if (IsWatching && !ctsRouting.IsCancellationRequested)
                     {
-                        _ = MoveCameraRequest.MoveCamera(CameraUpdateFactory.NewPosition(postionnew));
+                        _ = AnimateCameraRequest.AnimateCamera(CameraUpdateFactory.NewPosition(postionnew), TimeSpan.FromMilliseconds(1));
                     }
-                    await Task.Delay(TimeSpan.FromMilliseconds(0.55));
+                    await Task.Delay(TimeSpan.FromMilliseconds(0.45));
                 }
                 PinCar.Position = finalPosition;
                 IsRunning = false;
