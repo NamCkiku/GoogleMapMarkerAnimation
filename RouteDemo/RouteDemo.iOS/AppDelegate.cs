@@ -2,7 +2,7 @@
 using Prism;
 using Prism.Ioc;
 using UIKit;
-
+using Xamarin.Forms.GoogleMaps.iOS;
 
 namespace RouteDemo.iOS
 {
@@ -22,6 +22,12 @@ namespace RouteDemo.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.Init();
+
+            Xamarin.FormsGoogleMaps.Init("AIzaSyDSdW_P8JRfGlL620LM3pL3umSnh0_lUjo", new PlatformConfig
+            {
+                ImageFactory = new CachingImageFactory()
+            });
+
             LoadApplication(new App(new iOSInitializer()));
 
             return base.FinishedLaunching(app, options);
