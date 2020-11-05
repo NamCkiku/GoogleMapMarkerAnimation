@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<Label
+    x:Class="RouteDemo.Views.PinInfowindowView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Padding="3,0"
+    AnchorX="0.5"
+    AnchorY="2"
+    BackgroundColor="White"
+    FontAttributes="Bold"
+    FontSize="12"
+    HeightRequest="-1"
+    HorizontalTextAlignment="Center"
+    TextColor="#333333"
+    VerticalTextAlignment="Center" />

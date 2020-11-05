@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="RouteDemo.Views.MainPage"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:googlemap="clr-namespace:Xamarin.Forms.GoogleMaps;assembly=Xamarin.Forms.GoogleMaps"
+    xmlns:googlemapsBehaviors="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
+    Title="{Binding Title}">
+
+    <Grid>
+        <googlemap:Map x:Name="map" MapType="Street">
+            <googlemap:Map.Behaviors>
+                <googlemapsBehaviors:BindingPinsBehavior Value="{Binding Pins}" />
+                <googlemapsBehaviors:PinClickedToCommandBehavior Command="{Binding PinClickedCommand}" />
+                <googlemapsBehaviors:BindingPolylinesBehavior Value="{Binding Polylines}" />
+                <googlemapsBehaviors:MoveCameraBehavior Request="{Binding MoveCameraRequest}" />
+                <googlemapsBehaviors:AnimateCameraBehavior Request="{Binding AnimateCameraRequest}" />
+            </googlemap:Map.Behaviors>
+        </googlemap:Map>
+    </Grid>
+</ContentPage>
