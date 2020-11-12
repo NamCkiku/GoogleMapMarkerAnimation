@@ -208,16 +208,9 @@ namespace RouteDemo.ViewModels
                 IsRunning = true;
                 var startPosition = new Position(PinCar.Position.Latitude, PinCar.Position.Longitude);
                 var finalPosition = new Position(latitude, longitude);
-                double elapsed = 0;
-                double time = 0;
-                double v;
                 void callbackanimate(double input)
                 {
-                    elapsed = elapsed + 10;
-                    time = elapsed / 1000;
-                    v = GeoHelper.GetInterpolation(time);
-
-                    var postionnew = GeoHelper.Interpolate(v,
+                    var postionnew = GeoHelper.LinearInterpolator(input,
                         startPosition,
                         finalPosition);
                     PinCar.Position = new Position(postionnew.Latitude, postionnew.Longitude);
@@ -230,7 +223,7 @@ namespace RouteDemo.ViewModels
                 "moveCar",
                 animation: new Animation(callbackanimate),
                 rate: 10,
-                length: 1000,
+                length: 500,
                 finished: (val, b) =>
                 {
                     IsRunning = false;
@@ -245,7 +238,6 @@ namespace RouteDemo.ViewModels
         private void RotateMarker(double latitude,
             double longitude, Action callback)
         {
-            var mRotateIndex = 0;
             // * tính góc quay giữa 2 điểm location
             var angle = GeoHelper.ComputeHeading(PinCar.Position.Latitude, PinCar.Position.Longitude, latitude, longitude);
             if (angle == 0)
@@ -259,10 +251,9 @@ namespace RouteDemo.ViewModels
             void callbackanimate(double input)
             {
                 var fractionAngle = GeoHelper.ComputeRotation(
-                                      mRotateIndex / 5,
+                                     input,
                                       startRotaion,
                                       deltaAngle);
-                mRotateIndex = mRotateIndex + 1;
 
                 PinCar.Rotation = (float)fractionAngle;
             }

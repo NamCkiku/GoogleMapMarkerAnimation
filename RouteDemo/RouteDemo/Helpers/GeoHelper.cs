@@ -200,6 +200,13 @@ namespace RouteDemo.Helpers
             return new Position(ToDegrees(lat), ToDegrees(lng));
         }
 
+        public static Position LinearInterpolator(double fraction, Position from, Position to)
+        {
+            double lat = (to.Latitude - from.Latitude) * fraction + from.Latitude;
+            double lng = (to.Longitude - from.Longitude) * fraction + from.Longitude;
+            return new Position(lat, lng);
+        }
+
         public static double GetInterpolation(double input)
         {
             return (float)(Math.Cos((input + 1) * Math.PI) / 2.0f) + 0.5f;
