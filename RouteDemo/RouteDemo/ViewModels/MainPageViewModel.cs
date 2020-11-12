@@ -5,6 +5,7 @@ using RouteDemo.Views;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -22,6 +23,7 @@ namespace RouteDemo.ViewModels
             : base(navigationService)
         {
             Title = "Main Page";
+            contentview = new ContentView();
         }
         public override void Initialize(INavigationParameters parameters)
         {
@@ -32,10 +34,9 @@ namespace RouteDemo.ViewModels
             base.OnNavigatedTo(parameters);
 
             await Task.Delay(1000); // workaround for #30 [Android]Map.Pins.Add doesn't work when page OnAppearing  
-
             GetListRoute();
         }
-
+        private ContentView contentview;
         private CancellationTokenSource ctsRouting = new CancellationTokenSource();
         public bool IsRunning { get; set; }
         private Pin PinCar, PinPlate;
@@ -177,69 +178,26 @@ namespace RouteDemo.ViewModels
 
         private void SuperInteligent()
         {
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                PlayCurrent++;
+            PlayCurrent++;
 
-                CurrentRoute = ListRoute[PlayCurrent];
-                RotateMarker(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
+            CurrentRoute = ListRoute[PlayCurrent];
+            RotateMarker(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
+            {
+                MarkerAnimation(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
                 {
-                    MarkerAnimation(CurrentRoute.Latitude, CurrentRoute.Longitude, () =>
+                    if (PlayCurrent + 1 > PlayMax || ctsRouting.IsCancellationRequested)
                     {
-                        if (PlayCurrent + 1 > PlayMax || ctsRouting.IsCancellationRequested)
-                        {
-                            IsPlaying = false;
-                            return;
-                        }
+                        IsPlaying = false;
+                        return;
+                    }
 
-                        SuperInteligent();
-                    });
+                    SuperInteligent();
                 });
-
             });
 
         }
 
-        public void RotateMarker(double latitude,
-            double longitude,
-            Action callback, int duration = 100)
-        {
-            //gán lại vòng quay
-            var mRotateIndex = 0;
-            double MAX_ROTATE_STEP = duration / 50;
-            // * tính góc quay giữa 2 điểm location
-            var angle = GeoHelper.ComputeHeading(PinCar.Position.Latitude, PinCar.Position.Longitude, latitude, longitude);
-            if (angle == 0)
-            {
-                callback();
-                return;
-            }
-            var startRotaion = PinCar.Rotation;
-            //tính lại độ lệch góc
-            var deltaAngle = GeoHelper.GetRotaion(startRotaion, angle);
-
-            Device.StartTimer(TimeSpan.FromMilliseconds(50), () =>
-            {
-                //góc quay tiếp theo
-                var fractionAngle = GeoHelper.ComputeRotation(
-                                      mRotateIndex / MAX_ROTATE_STEP,
-                                      startRotaion,
-                                      deltaAngle);
-                mRotateIndex = mRotateIndex + 1;
-
-                PinCar.Rotation = (float)fractionAngle;
-
-                if (mRotateIndex > MAX_ROTATE_STEP)
-                {
-                    callback();
-                    return false;
-                }
-
-                return true;
-            });
-        }
-
-        public async void MarkerAnimation(double latitude, double longitude, Action callback, int duration = 500)
+        public void MarkerAnimation(double latitude, double longitude, Action callback)
         {
             if (this.IsRunning)
             {
@@ -253,10 +211,10 @@ namespace RouteDemo.ViewModels
                 double elapsed = 0;
                 double time = 0;
                 double v;
-                while (!ctsRouting.IsCancellationRequested && time < 1)
+                void callbackanimate(double input)
                 {
                     elapsed = elapsed + 10;
-                    time = elapsed / duration;
+                    time = elapsed / 1000;
                     v = GeoHelper.GetInterpolation(time);
 
                     var postionnew = GeoHelper.Interpolate(v,
@@ -265,14 +223,61 @@ namespace RouteDemo.ViewModels
                     PinCar.Position = new Position(postionnew.Latitude, postionnew.Longitude);
                     if (IsWatching && !ctsRouting.IsCancellationRequested)
                     {
-                        _ = AnimateCameraRequest.AnimateCamera(CameraUpdateFactory.NewPosition(postionnew), TimeSpan.FromMilliseconds(1));
+                        _ = MoveCameraRequest.MoveCamera(CameraUpdateFactory.NewPosition(postionnew));
                     }
-                    await Task.Delay(TimeSpan.FromMilliseconds(0.45));
                 }
-                PinCar.Position = finalPosition;
-                IsRunning = false;
-                callback();
+                contentview.Animate(
+                "moveCar",
+                animation: new Animation(callbackanimate),
+                rate: 10,
+                length: 1000,
+                finished: (val, b) =>
+                {
+                    IsRunning = false;
+                    callback();
+                }
+                );
+
             }
+        }
+
+
+        private void RotateMarker(double latitude,
+            double longitude, Action callback)
+        {
+            var mRotateIndex = 0;
+            // * tính góc quay giữa 2 điểm location
+            var angle = GeoHelper.ComputeHeading(PinCar.Position.Latitude, PinCar.Position.Longitude, latitude, longitude);
+            if (angle == 0)
+            {
+                callback();
+                return;
+            }
+            var startRotaion = PinCar.Rotation;
+            //tính lại độ lệch góc
+            var deltaAngle = GeoHelper.GetRotaion(startRotaion, angle);
+            void callbackanimate(double input)
+            {
+                var fractionAngle = GeoHelper.ComputeRotation(
+                                      mRotateIndex / 5,
+                                      startRotaion,
+                                      deltaAngle);
+                mRotateIndex = mRotateIndex + 1;
+
+                PinCar.Rotation = (float)fractionAngle;
+            }
+            contentview.Animate(
+                "rotateCar",
+
+                animation: new Animation(callbackanimate),
+                rate: 10,
+                length: 50,
+
+                finished: (val, b) =>
+                {
+                    callback();
+                }
+                );
         }
     }
 }

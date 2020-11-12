@@ -7,7 +7,7 @@
     xmlns:googlemapsBehaviors="clr-namespace:Xamarin.Forms.GoogleMaps.Bindings;assembly=Xamarin.Forms.GoogleMaps.Bindings"
     Title="{Binding Title}">
 
-    <Grid>
+    <Grid x:Name="adsada">
         <googlemap:Map x:Name="map" MapType="Street">
             <googlemap:Map.Behaviors>
                 <googlemapsBehaviors:BindingPinsBehavior Value="{Binding Pins}" />

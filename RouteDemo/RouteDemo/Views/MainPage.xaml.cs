@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.GoogleMaps;
+﻿using Xamarin.Forms;
+using Xamarin.Forms.GoogleMaps;
 
 namespace RouteDemo.Views
 {
