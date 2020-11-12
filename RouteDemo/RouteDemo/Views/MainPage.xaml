@@ -17,5 +17,21 @@
                 <googlemapsBehaviors:AnimateCameraBehavior Request="{Binding AnimateCameraRequest}" />
             </googlemap:Map.Behaviors>
         </googlemap:Map>
+
+        <StackLayout
+            HorizontalOptions="FillAndExpand"
+            Orientation="Horizontal"
+            VerticalOptions="Start">
+            <Button
+                Command="{Binding IncreaseSpeedCommand}"
+                Text="Next"
+                WidthRequest="100" />
+
+            <Button
+                Command="{Binding DecreaseSpeedCommand}"
+                Text="Pree"
+                WidthRequest="100" />
+        </StackLayout>
+
     </Grid>
 </ContentPage>
