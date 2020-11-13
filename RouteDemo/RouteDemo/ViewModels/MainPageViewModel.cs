@@ -19,6 +19,9 @@ namespace RouteDemo.ViewModels
         public ICommand PinClickedCommand { get; }
         public ICommand IncreaseSpeedCommand { get; }
         public ICommand DecreaseSpeedCommand { get; }
+        public ICommand WatchingCommand { get; }
+
+        public ICommand PlayStopCommand { get; }
 
         public MainPageViewModel(INavigationService navigationService)
             : base(navigationService)
@@ -26,6 +29,8 @@ namespace RouteDemo.ViewModels
             Title = "Main Page";
             IncreaseSpeedCommand = new DelegateCommand(IncreaseSpeed);
             DecreaseSpeedCommand = new Command(DecreaseSpeed);
+            WatchingCommand = new DelegateCommand(Watching);
+            PlayStopCommand = new DelegateCommand(PlayStop);
             contentview = new ContentView();
         }
 
@@ -226,9 +231,12 @@ namespace RouteDemo.ViewModels
                         startPosition,
                         finalPosition);
                     PinCar.Position = new Position(postionnew.Latitude, postionnew.Longitude);
-                    if (IsWatching && !ctsRouting.IsCancellationRequested)
+                    if (Device.RuntimePlatform == Device.iOS)
                     {
-                        _ = AnimateCameraRequest.AnimateCamera(CameraUpdateFactory.NewPosition(postionnew), TimeSpan.FromMilliseconds(1000 / PlaySpeed));
+                        if (IsWatching && !ctsRouting.IsCancellationRequested)
+                        {
+                            _ = AnimateCameraRequest.AnimateCamera(CameraUpdateFactory.NewPosition(postionnew), TimeSpan.FromMilliseconds(1000 / PlaySpeed));
+                        }
                     }
                 }
                 contentview.Animate(
@@ -237,6 +245,13 @@ namespace RouteDemo.ViewModels
                 length: (uint)(BaseTimeMoving / PlaySpeed),
                 finished: (val, b) =>
                 {
+                    if (Device.RuntimePlatform == Device.Android)
+                    {
+                        if (IsWatching && !ctsRouting.IsCancellationRequested)
+                        {
+                            _ = AnimateCameraRequest.AnimateCamera(CameraUpdateFactory.NewPosition(PinCar.Position), TimeSpan.FromMilliseconds(300));
+                        }
+                    }
                     IsRunning = false;
                     callback();
                 }
@@ -294,20 +309,72 @@ namespace RouteDemo.ViewModels
             PlaySpeed /= 2;
         }
 
-        private async void ChangeSpeed()
+        private void Watching()
         {
-            if (PlaySpeed >= SPEED_MAX)
+            IsWatching = !IsWatching;
+        }
+
+        private void Stop()
+        {
+            if (IsPlaying)
             {
-                PlaySpeed = 4;
-                await Task.Delay(1000);
-                PlaySpeed = 2;
-                await Task.Delay(1000);
-                PlaySpeed = 1;
+                if (ctsRouting != null)
+                    ctsRouting.Cancel();
+
+                IsPlaying = false;
+            }
+        }
+
+        private void PlayStop()
+        {
+            try
+            {
+                if (!IsPlaying)
+                {
+                    if (PlayCurrent >= PlayMax)
+                        return;
+
+                    if (ctsRouting != null)
+                        ctsRouting.Cancel();
+
+                    ctsRouting = new CancellationTokenSource();
+
+                    MoveToCurrent();
+                }
+                else
+                {
+                    Stop();
+
+                    IsPlaying = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                if (ctsRouting != null)
+                    ctsRouting.Cancel();
+
+                IsPlaying = false;
+            }
+        }
+
+        private void MoveToCurrent()
+        {
+            CurrentRoute = ListRoute[PlayCurrent];
+            if (PlayCurrent > 0)
+            {
+                PinCar.Rotation = (float)GeoHelper.ComputeHeading(ListRoute[PlayCurrent - 1].Latitude, ListRoute[PlayCurrent - 1].Longitude, CurrentRoute.Latitude, CurrentRoute.Longitude);
             }
             else
             {
-                PlaySpeed *= 2;
+                PinCar.Rotation = (float)GeoHelper.ComputeHeading(CurrentRoute.Latitude, CurrentRoute.Longitude, ListRoute[PlayCurrent + 1].Latitude, ListRoute[PlayCurrent + 1].Longitude);
             }
+            PinCar.Position = new Position(CurrentRoute.Latitude, CurrentRoute.Longitude);
+
+            MoveCameraRequest.MoveCamera(CameraUpdateFactory.NewPosition(PinCar.Position));
+
+            SuperInteligent();
+
+            IsPlaying = true;
         }
     }
 }

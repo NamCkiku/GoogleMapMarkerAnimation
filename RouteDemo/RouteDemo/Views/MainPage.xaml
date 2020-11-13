@@ -25,12 +25,22 @@
             <Button
                 Command="{Binding IncreaseSpeedCommand}"
                 Text="Next"
-                WidthRequest="100" />
+                WidthRequest="80" />
 
             <Button
                 Command="{Binding DecreaseSpeedCommand}"
                 Text="Pree"
-                WidthRequest="100" />
+                WidthRequest="80" />
+
+            <Button
+                Command="{Binding WatchingCommand}"
+                Text="Watch"
+                WidthRequest="80" />
+
+            <Button
+                Command="{Binding PlayStopCommand}"
+                Text="Stop"
+                WidthRequest="80" />
         </StackLayout>
 
     </Grid>
