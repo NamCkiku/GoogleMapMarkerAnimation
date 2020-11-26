@@ -1,1 +1,2 @@
 # GoogleMapMarkerAnimation
+![](markeranimation.png)
