@@ -7,7 +7,7 @@ namespace RouteDemo.Droid
     [Application(
         Theme = "@style/MainTheme"
         )]
-    [MetaData("com.google.android.maps.v2.API_KEY", Value = "AIzaSyDwhz_8SoIcFYMLVh3rcto1cWGbAPdQfGI")]
+    [MetaData("com.google.android.maps.v2.API_KEY", Value = "myKey")]
     public class MainApplication : Application
     {
         public MainApplication(IntPtr javaReference, JniHandleOwnership transfer)

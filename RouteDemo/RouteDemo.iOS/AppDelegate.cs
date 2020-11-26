@@ -23,7 +23,7 @@ namespace RouteDemo.iOS
         {
             global::Xamarin.Forms.Forms.Init();
 
-            Xamarin.FormsGoogleMaps.Init("AIzaSyDSdW_P8JRfGlL620LM3pL3umSnh0_lUjo", new PlatformConfig
+            Xamarin.FormsGoogleMaps.Init("MyKey", new PlatformConfig
             {
                 ImageFactory = new CachingImageFactory()
             });
