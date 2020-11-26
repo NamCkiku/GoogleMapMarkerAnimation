@@ -185,7 +185,7 @@ namespace RouteDemo.ViewModels
 
                 IsPlaying = true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (ctsRouting != null)
                     ctsRouting.Cancel();
@@ -348,7 +348,7 @@ namespace RouteDemo.ViewModels
                     IsPlaying = false;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 if (ctsRouting != null)
                     ctsRouting.Cancel();
